@@ -9,4 +9,5 @@ type OrderRepository interface {
 	FindMany(*GetManyOrdersIn) (*OrderRepositoryPaginatedOut, error)
 	FindById(string) (*Order, error)
 	Save(*Order) (*Order, error)
+	UpdateStatus(id string, status string) error
 }

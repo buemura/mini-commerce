@@ -139,3 +139,12 @@ func (r *PgxOrderRepository) Save(o *order.Order) (*order.Order, error) {
 	}
 	return o, nil
 }
+
+func (r *PgxOrderRepository) UpdateStatus(id string, status string) error {
+	_, err := r.conn.Exec(
+		context.Background(),
+		`UPDATE "order" SET status = $1, updated_at = NOW() WHERE id = $2`,
+		status, id,
+	)
+	return err
+}

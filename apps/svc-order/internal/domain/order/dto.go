@@ -16,6 +16,11 @@ type GetManyOrdersIn struct {
 	Items int
 }
 
+type UpdateOrderStatusIn struct {
+	OrderId string `json:"order_id"`
+	Status  string `json:"status"`
+}
+
 type GetManyOrdersOut struct {
 	OrderList []*Order
 	Meta      *common.PaginationMeta

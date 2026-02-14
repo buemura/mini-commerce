@@ -34,3 +34,13 @@ func (r *InMemoryOrderRepo) Save(o *order.Order) (*order.Order, error) {
 	r.order = append(r.order, o)
 	return o, nil
 }
+
+func (r *InMemoryOrderRepo) UpdateStatus(id string, status string) error {
+	for _, v := range r.order {
+		if v.ID == id {
+			v.Status = status
+			return nil
+		}
+	}
+	return order.ErrOrderNotFound
+}

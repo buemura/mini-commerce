@@ -11,12 +11,14 @@ import (
 	"github.com/buemura/event-driven-commerce/svc-order/config"
 	"github.com/buemura/event-driven-commerce/svc-order/internal/infra/database"
 	"github.com/buemura/event-driven-commerce/svc-order/internal/infra/grpc/server/controllers"
+	"github.com/buemura/event-driven-commerce/svc-order/internal/infra/queue/rabbit"
 	"google.golang.org/grpc"
 )
 
 func init() {
 	config.LoadEnv()
 	database.Connect()
+	rabbit.DeclareQueueList()
 }
 
 func main() {
@@ -34,6 +36,12 @@ func main() {
 			log.Fatalf("failed to server grpc: %s", err)
 		}
 	}()
+
+	for _, q := range rabbit.QueueConsumerList {
+		go rabbit.Consume(&rabbit.ConsumeIn{
+			Queue: q,
+		})
+	}
 
 	log.Println("gRPC Server running at", port, "...")
 	stop := make(chan os.Signal, 1)

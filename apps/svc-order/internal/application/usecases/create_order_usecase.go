@@ -1,6 +1,9 @@
 package usecases
 
 import (
+	"encoding/json"
+	"log"
+
 	"github.com/buemura/event-driven-commerce/svc-order/internal/application/contracts"
 	"github.com/buemura/event-driven-commerce/svc-order/internal/domain/order"
 )
@@ -8,15 +11,18 @@ import (
 type CreateOrderUsecase struct {
 	repo           order.OrderRepository
 	productService contracts.ProductService
+	publisher      contracts.QueuePublisher
 }
 
 func NewCreateOrderUsecase(
 	repo order.OrderRepository,
 	productService contracts.ProductService,
+	publisher contracts.QueuePublisher,
 ) *CreateOrderUsecase {
 	return &CreateOrderUsecase{
 		repo:           repo,
 		productService: productService,
+		publisher:      publisher,
 	}
 }
 
@@ -38,5 +44,29 @@ func (s *CreateOrderUsecase) Execute(in *order.CreateOrderIn) (*order.Order, err
 		return nil, err
 	}
 
+	s.publishOrderCreated(res)
+
 	return res, nil
+}
+
+func (s *CreateOrderUsecase) publishOrderCreated(o *order.Order) {
+	payload := map[string]interface{}{
+		"order_id":       o.ID,
+		"amount":         o.TotalPrice,
+		"payment_method": o.PaymentMethod,
+	}
+
+	data, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("[CreateOrderUsecase][publishOrderCreated] - Failed to marshal payload: %s", err)
+		return
+	}
+
+	err = s.publisher.Publish(&contracts.PublishInput{
+		RoutingKey: "order.create",
+		Payload:    string(data),
+	})
+	if err != nil {
+		log.Printf("[CreateOrderUsecase][publishOrderCreated] - Failed to publish order.create: %s", err)
+	}
 }

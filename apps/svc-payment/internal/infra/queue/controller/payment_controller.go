@@ -75,12 +75,16 @@ func ProcessPayment(payload string) {
 		return
 	}
 
-	paymentCreate, _ := json.Marshal(&order.UpdateOrderIn{
+	orderUpdatePayload, _ := json.Marshal(&order.UpdateOrderIn{
 		OrderId: p.OrderId,
 		Status:  order.StatusCompleted,
 	})
 	queue.Publish(&queue.PublishIn{
 		RountingKey: "order.update",
-		Payload:     string(paymentCreate),
+		Payload:     string(orderUpdatePayload),
+	})
+	queue.Publish(&queue.PublishIn{
+		RountingKey: "order.completed",
+		Payload:     string(orderUpdatePayload),
 	})
 }

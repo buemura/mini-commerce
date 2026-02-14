@@ -1,38 +1,31 @@
 package rabbit
 
 import (
-	"github.com/buemura/event-driven-commerce/svc-payment/config"
-	"github.com/buemura/event-driven-commerce/svc-payment/internal/infra/util"
+	"github.com/buemura/event-driven-commerce/svc-order/config"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"log"
 )
 
 var QueueDeclareList []string = []string{
-	"payment.create",
-	"payment.create.dlq",
-	"payment.process",
-	"payment.process.dlq",
-	"order.create",
-	"order.create.dlq",
-	"order.update",
-	"order.update.dlq",
 	"order.completed",
 	"order.completed.dlq",
 }
 
 var QueueConsumerList []string = []string{
-	"payment.create",
-	"payment.process",
-	"order.create",
-	"order.update",
+	"order.completed",
 }
 
 func DeclareQueueList() {
 	conn, err := amqp.Dial(config.BROKER_URL)
-	util.FailOnError(err, "Failed to connect to RabbitMQ")
+	if err != nil {
+		log.Panicf("Failed to connect to RabbitMQ: %s", err)
+	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
-	util.FailOnError(err, "Failed to open a channel")
+	if err != nil {
+		log.Panicf("Failed to open a channel: %s", err)
+	}
 	defer ch.Close()
 
 	for _, q := range QueueDeclareList {
@@ -44,6 +37,8 @@ func DeclareQueueList() {
 			false, // no-wait
 			nil,   // arguments
 		)
-		util.FailOnError(err, "Failed to declare a queue")
+		if err != nil {
+			log.Panicf("Failed to declare queue %s: %s", q, err)
+		}
 	}
 }

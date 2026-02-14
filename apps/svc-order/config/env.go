@@ -11,6 +11,7 @@ var (
 	GRPC_PORT             string
 	DATABASE_URL          string
 	GRPC_HOST_PRODUCT_SVC string
+	BROKER_URL            string
 )
 
 func LoadEnv() {
@@ -22,6 +23,7 @@ func LoadEnv() {
 		GRPC_PORT = os.Getenv("GRPC_PORT")
 		DATABASE_URL = os.Getenv("DATABASE_URL")
 		GRPC_HOST_PRODUCT_SVC = os.Getenv("GRPC_HOST_PRODUCT_SVC")
+		BROKER_URL = os.Getenv("BROKER_URL")
 		return
 	}
 
@@ -29,4 +31,5 @@ func LoadEnv() {
 	GRPC_PORT = viper.GetString("GRPC_PORT")
 	DATABASE_URL = viper.GetString("DATABASE_URL")
 	GRPC_HOST_PRODUCT_SVC = viper.GetString("GRPC_HOST_PRODUCT_SVC")
+	BROKER_URL = viper.GetString("BROKER_URL")
 }
