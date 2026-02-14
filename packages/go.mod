@@ -1,6 +1,6 @@
 module github.com/buemura/event-driven-commerce/packages
 
-go 1.22.0
+go 1.26.0
 
 require (
 	google.golang.org/grpc v1.62.0

@@ -76,7 +76,7 @@ func (*OrderGrpcService) GetManyOrders(in *order.GetManyOrdersIn) (*order.GetMan
 func (*OrderGrpcService) CreateOrder(in *order.CreateOrderIn) (*order.Order, error) {
 	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to dial order-svc server: %v", err)
+		log.Fatalf("Failed to dial svc-order server: %v", err)
 	}
 	defer conn.Close()
 

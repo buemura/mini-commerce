@@ -1,6 +1,6 @@
 module github.com/buemura/event-driven-commerce/api-gtw
 
-go 1.22.0
+go 1.26.0
 
 require (
 	github.com/spf13/viper v1.18.2

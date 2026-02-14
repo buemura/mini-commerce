@@ -1,5 +1,5 @@
 # Base
-FROM golang:1.22-alpine3.19 as base
+FROM golang:1.26-alpine3.19 as base
 WORKDIR /go/packages
 COPY ./packages/ ./
 RUN go mod download

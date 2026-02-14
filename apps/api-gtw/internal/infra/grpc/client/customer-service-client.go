@@ -20,7 +20,7 @@ func NewCustomerGrpcService() *CustomerGrpcService {
 func (*CustomerGrpcService) SignIn(in *customer.SignInRequest) (*customer.SignInResponse, error) {
 	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to dial customer-svc server: %v", err)
+		log.Fatalf("Failed to dial svc-customer server: %v", err)
 	}
 	defer conn.Close()
 
@@ -47,7 +47,7 @@ func (*CustomerGrpcService) SignIn(in *customer.SignInRequest) (*customer.SignIn
 func (*CustomerGrpcService) SignUp(in *customer.SignUpRequest) (*customer.SignUpResponse, error) {
 	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to dial customer-svc server: %v", err)
+		log.Fatalf("Failed to dial svc-customer server: %v", err)
 	}
 	defer conn.Close()
 
@@ -67,7 +67,7 @@ func (*CustomerGrpcService) SignUp(in *customer.SignUpRequest) (*customer.SignUp
 func (*CustomerGrpcService) GetCustomer(id string) (*customer.Customer, error) {
 	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to dial customer-svc server: %v", err)
+		log.Fatalf("Failed to dial svc-customer server: %v", err)
 	}
 	defer conn.Close()
 
