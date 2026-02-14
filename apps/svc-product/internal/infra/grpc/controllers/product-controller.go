@@ -34,7 +34,7 @@ func (c ProductController) GetManyProducts(
 	repo := database.NewPgxProductRepository(database.Conn)
 	usecase := usecases.NewGetManyProductUsecase(repo)
 
-	res, err := usecase.Execute(&product.GetManyProductsIn{
+	res, err := usecase.Execute(ctx, &product.GetManyProductsIn{
 		Page:  page,
 		Items: items,
 	})
@@ -79,7 +79,7 @@ func (c ProductController) GetProduct(
 	repo := database.NewPgxProductRepository(database.Conn)
 	usecase := usecases.NewGetProductUsecase(repo)
 
-	prod, err := usecase.Execute(int(in.Id))
+	prod, err := usecase.Execute(ctx, int(in.Id))
 	if err != nil {
 		log.Println("[GrpcServer][GetProduct] - Error:", err.Error())
 		return nil, helper.HandleGrpcError(err)
@@ -108,7 +108,7 @@ func (c ProductController) UpdateProductQuantity(
 	repo := database.NewPgxProductRepository(database.Conn)
 	usecase := usecases.NewUpdateProductQuantityUsecase(repo)
 
-	prod, err := usecase.Execute(&product.UpdateProductQuantityIn{
+	prod, err := usecase.Execute(ctx, &product.UpdateProductQuantityIn{
 		ID:       int(in.Id),
 		Quantity: int(in.Quantity),
 	})

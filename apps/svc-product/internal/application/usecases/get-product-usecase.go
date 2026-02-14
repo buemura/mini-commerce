@@ -1,6 +1,10 @@
 package usecases
 
-import "github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
+import (
+	"context"
+
+	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
+)
 
 type GetProductUsecase struct {
 	repo product.ProductRepository
@@ -12,8 +16,8 @@ func NewGetProductUsecase(repo product.ProductRepository) *GetProductUsecase {
 	}
 }
 
-func (s *GetProductUsecase) Execute(id int) (*product.Product, error) {
-	prod, err := s.repo.FindById(id)
+func (s *GetProductUsecase) Execute(ctx context.Context, id int) (*product.Product, error) {
+	prod, err := s.repo.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}

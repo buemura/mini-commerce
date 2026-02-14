@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
@@ -40,7 +41,7 @@ func TestGetProductUsecase(t *testing.T) {
 	service := NewGetProductUsecase(repo)
 
 	t.Run("Return product struct", func(t *testing.T) {
-		res, _ := service.Execute(1)
+		res, _ := service.Execute(context.Background(), 1)
 		assert.Equal(t, &product.Product{
 			ID:          1,
 			Name:        "existing_product",

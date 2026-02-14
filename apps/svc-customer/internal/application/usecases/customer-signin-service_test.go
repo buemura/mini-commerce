@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/domain/customer"
@@ -31,7 +32,7 @@ func TestCustomerSignin(t *testing.T) {
 			Password: "no_password",
 		}
 
-		_, err := service.Execute(input)
+		_, err := service.Execute(context.Background(), input)
 		assert.Equal(t, err, customer.ErrCustomerInvalidCredential)
 		assert.NotNil(t, err)
 	})
@@ -42,7 +43,7 @@ func TestCustomerSignin(t *testing.T) {
 			Password: "wrong_password",
 		}
 
-		_, err := service.Execute(input)
+		_, err := service.Execute(context.Background(), input)
 		assert.Equal(t, err, customer.ErrCustomerInvalidCredential)
 		assert.NotNil(t, err)
 	})
@@ -53,7 +54,7 @@ func TestCustomerSignin(t *testing.T) {
 			Password: "existing_password",
 		}
 
-		res, err := service.Execute(input)
+		res, err := service.Execute(context.Background(), input)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, &customer.SigninCustomerOut{
 			AccessToken: "existing_id",

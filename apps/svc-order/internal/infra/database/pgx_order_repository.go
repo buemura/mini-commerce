@@ -18,15 +18,15 @@ func NewPgxOrderRepository(conn *pgxpool.Pool) *PgxOrderRepository {
 	}
 }
 
-func (r *PgxOrderRepository) FindById(id string) (*order.Order, error) {
+func (r *PgxOrderRepository) FindById(ctx context.Context, id string) (*order.Order, error) {
 	rows, err := r.conn.Query(
-		context.Background(),
+		ctx,
 		`
-		SELECT 
-			o.*, 
+		SELECT
+			o.*,
 			ARRAY_AGG(ROW(op.product_id, op.price, op.quantity)) AS product_list
-		FROM "order" o 
-		INNER JOIN order_product op ON o.id = op.order_id 
+		FROM "order" o
+		INNER JOIN order_product op ON o.id = op.order_id
 		WHERE o.id = $1
 		GROUP BY o.id`,
 		id,
@@ -56,14 +56,14 @@ func (r *PgxOrderRepository) FindById(id string) (*order.Order, error) {
 	return orderList[0], nil
 }
 
-func (r *PgxOrderRepository) FindMany(in *order.GetManyOrdersIn) (*order.OrderRepositoryPaginatedOut, error) {
+func (r *PgxOrderRepository) FindMany(ctx context.Context, in *order.GetManyOrdersIn) (*order.OrderRepositoryPaginatedOut, error) {
 	limit := in.Items
 	offset := (in.Page - 1) * in.Items
 
 	rows, err := r.conn.Query(
-		context.Background(),
+		ctx,
 		`
-		SELECT 
+		SELECT
 			o.*,
 			ARRAY_AGG(ROW(op.product_id, op.price, op.quantity)) AS product_list
 		FROM "order" o
@@ -93,7 +93,7 @@ func (r *PgxOrderRepository) FindMany(in *order.GetManyOrdersIn) (*order.OrderRe
 	}
 
 	var totalCount int
-	err = r.conn.QueryRow(context.Background(), `SELECT count(id) as total_count FROM "order"`).Scan(&totalCount)
+	err = r.conn.QueryRow(ctx, `SELECT count(id) as total_count FROM "order"`).Scan(&totalCount)
 	if err != nil {
 		return nil, err
 	}
@@ -104,17 +104,17 @@ func (r *PgxOrderRepository) FindMany(in *order.GetManyOrdersIn) (*order.OrderRe
 	}, nil
 }
 
-func (r *PgxOrderRepository) Save(o *order.Order) (*order.Order, error) {
-	tx, err := r.conn.Begin(context.Background())
+func (r *PgxOrderRepository) Save(ctx context.Context, o *order.Order) (*order.Order, error) {
+	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(context.Background())
+	defer tx.Rollback(ctx)
 
 	batch := &pgx.Batch{}
 
 	batch.Queue(`
-		INSERT INTO "order" (id, customer_id, total_price, status, payment_method, created_at, updated_at) 
+		INSERT INTO "order" (id, customer_id, total_price, status, payment_method, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		o.ID, o.CustomerId, o.TotalPrice, o.Status, o.PaymentMethod, o.CreatedAt, o.UpdatedAt,
 	)
@@ -127,22 +127,22 @@ func (r *PgxOrderRepository) Save(o *order.Order) (*order.Order, error) {
 		)
 	}
 
-	bRes := tx.SendBatch(context.Background(), batch)
+	bRes := tx.SendBatch(ctx, batch)
 	if _, err := bRes.Exec(); err != nil {
 		return nil, err
 	}
 	if err := bRes.Close(); err != nil {
 		return nil, err
 	}
-	if err := tx.Commit(context.Background()); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	return o, nil
 }
 
-func (r *PgxOrderRepository) UpdateStatus(id string, status string) error {
+func (r *PgxOrderRepository) UpdateStatus(ctx context.Context, id string, status string) error {
 	_, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		`UPDATE "order" SET status = $1, updated_at = NOW() WHERE id = $2`,
 		status, id,
 	)

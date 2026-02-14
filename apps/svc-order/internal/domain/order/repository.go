@@ -1,13 +1,15 @@
 package order
 
+import "context"
+
 type OrderRepositoryPaginatedOut struct {
 	OrderList  []*Order
 	TotalCount int
 }
 
 type OrderRepository interface {
-	FindMany(*GetManyOrdersIn) (*OrderRepositoryPaginatedOut, error)
-	FindById(string) (*Order, error)
-	Save(*Order) (*Order, error)
-	UpdateStatus(id string, status string) error
+	FindMany(ctx context.Context, in *GetManyOrdersIn) (*OrderRepositoryPaginatedOut, error)
+	FindById(ctx context.Context, id string) (*Order, error)
+	Save(ctx context.Context, o *Order) (*Order, error)
+	UpdateStatus(ctx context.Context, id string, status string) error
 }

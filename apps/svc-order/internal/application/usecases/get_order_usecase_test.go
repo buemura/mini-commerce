@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -73,7 +74,7 @@ func TestGetOrderUsecase(t *testing.T) {
 	service := NewGetOrderUsecase(repo)
 
 	t.Run("Return order struct", func(t *testing.T) {
-		res, _ := service.Execute("order_3")
+		res, _ := service.Execute(context.Background(), "order_3")
 		assert.Equal(t, &expected, res)
 	})
 }

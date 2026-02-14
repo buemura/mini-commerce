@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"math"
 
 	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/common"
@@ -17,8 +18,8 @@ func NewGetManyProductUsecase(repo product.ProductRepository) *GetManyProductUse
 	}
 }
 
-func (uc *GetManyProductUsecase) Execute(opt *product.GetManyProductsIn) (*product.GetManyProductsOut, error) {
-	res, err := uc.repo.FindMany(opt)
+func (uc *GetManyProductUsecase) Execute(ctx context.Context, opt *product.GetManyProductsIn) (*product.GetManyProductsOut, error) {
+	res, err := uc.repo.FindMany(ctx, opt)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -26,30 +27,30 @@ func NewCreateOrderUsecase(
 	}
 }
 
-func (s *CreateOrderUsecase) Execute(in *order.CreateOrderIn) (*order.Order, error) {
+func (s *CreateOrderUsecase) Execute(ctx context.Context, in *order.CreateOrderIn) (*order.Order, error) {
 	o, err := order.NewOrder(in)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, p := range in.ProductList {
-		_, err := s.productService.UpdateProductQuantity(p.ID, (p.Quantity * -1))
+		_, err := s.productService.UpdateProductQuantity(ctx, p.ID, (p.Quantity * -1))
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	res, err := s.repo.Save(o)
+	res, err := s.repo.Save(ctx, o)
 	if err != nil {
 		return nil, err
 	}
 
-	s.publishOrderCreated(res)
+	s.publishOrderCreated(ctx, res)
 
 	return res, nil
 }
 
-func (s *CreateOrderUsecase) publishOrderCreated(o *order.Order) {
+func (s *CreateOrderUsecase) publishOrderCreated(ctx context.Context, o *order.Order) {
 	payload := map[string]interface{}{
 		"order_id":       o.ID,
 		"amount":         o.TotalPrice,
@@ -62,7 +63,7 @@ func (s *CreateOrderUsecase) publishOrderCreated(o *order.Order) {
 		return
 	}
 
-	err = s.publisher.Publish(&contracts.PublishInput{
+	err = s.publisher.Publish(ctx, &contracts.PublishInput{
 		RoutingKey: "order.create",
 		Payload:    string(data),
 	})

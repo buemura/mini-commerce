@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/infra/queue"
 )
 
-func CreatePayment(payload string) {
+func CreatePayment(ctx context.Context, payload string) {
 	var in *payment.CreatePaymentIn
 	err := json.Unmarshal([]byte(payload), &in)
 	if err != nil {
@@ -22,10 +23,10 @@ func CreatePayment(payload string) {
 	repo := database.NewPgxPaymentRepository()
 	uc := usecase.NewPaymentCreateUsecase(repo)
 
-	p, err := uc.Execute(in)
+	p, err := uc.Execute(ctx, in)
 	if err != nil {
 		log.Println("[QueueController][CreatePayment] - Error:", err.Error())
-		queue.Publish(&queue.PublishIn{
+		queue.Publish(ctx, &queue.PublishIn{
 			RountingKey: "payment.create.dlq",
 			Payload:     payload,
 		})
@@ -36,13 +37,13 @@ func CreatePayment(payload string) {
 	processPaymentPayload, _ := json.Marshal(&payment.CreatePaymentOut{
 		OrderId: p.OrderId,
 	})
-	queue.Publish(&queue.PublishIn{
+	queue.Publish(ctx, &queue.PublishIn{
 		RountingKey: "payment.process",
 		Payload:     string(processPaymentPayload),
 	})
 }
 
-func ProcessPayment(payload string) {
+func ProcessPayment(ctx context.Context, payload string) {
 	var in *payment.ProcessPaymentIn
 	err := json.Unmarshal([]byte(payload), &in)
 	if err != nil {
@@ -53,10 +54,10 @@ func ProcessPayment(payload string) {
 	repo := database.NewPgxPaymentRepository()
 	uc := usecase.NewPaymentProcessUsecase(repo)
 
-	p, err := uc.Execute(in)
+	p, err := uc.Execute(ctx, in)
 	if err != nil {
 		log.Println("[QueueController][ProcessPayment] - Error:", err.Error())
-		queue.Publish(&queue.PublishIn{
+		queue.Publish(ctx, &queue.PublishIn{
 			RountingKey: "payment.create.dlq",
 			Payload:     payload,
 		})
@@ -68,7 +69,7 @@ func ProcessPayment(payload string) {
 		paymentCreate, _ := json.Marshal(&order.CreateOrderOut{
 			OrderID: p.OrderId,
 		})
-		queue.Publish(&queue.PublishIn{
+		queue.Publish(ctx, &queue.PublishIn{
 			RountingKey: "payment.create",
 			Payload:     string(paymentCreate),
 		})
@@ -79,11 +80,11 @@ func ProcessPayment(payload string) {
 		OrderId: p.OrderId,
 		Status:  order.StatusCompleted,
 	})
-	queue.Publish(&queue.PublishIn{
+	queue.Publish(ctx, &queue.PublishIn{
 		RountingKey: "order.update",
 		Payload:     string(orderUpdatePayload),
 	})
-	queue.Publish(&queue.PublishIn{
+	queue.Publish(ctx, &queue.PublishIn{
 		RountingKey: "order.completed",
 		Payload:     string(orderUpdatePayload),
 	})

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/domain/order"
 )
 
@@ -14,13 +16,13 @@ func NewOrderCreateUsecase(repo order.OrderRepository) *OrderCreateUsecase {
 	}
 }
 
-func (u *OrderCreateUsecase) Execute(in *order.CreateOrderIn) (*order.Order, error) {
+func (u *OrderCreateUsecase) Execute(ctx context.Context, in *order.CreateOrderIn) (*order.Order, error) {
 	o, err := order.NewOrder(in)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = u.repo.Save(o)
+	_, err = u.repo.Save(ctx, o)
 	if err != nil {
 		return nil, err
 	}

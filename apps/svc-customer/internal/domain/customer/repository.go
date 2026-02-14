@@ -1,7 +1,9 @@
 package customer
 
+import "context"
+
 type CustomerRepository interface {
-	FindById(id string) (*Customer, error)
-	FindByEmail(email string) (*Customer, error)
-	Save(customer *Customer) (*Customer, error)
+	FindById(ctx context.Context, id string) (*Customer, error)
+	FindByEmail(ctx context.Context, email string) (*Customer, error)
+	Save(ctx context.Context, customer *Customer) (*Customer, error)
 }

@@ -1,6 +1,8 @@
 package database
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/domain/customer"
 )
 
@@ -14,7 +16,7 @@ func NewInMemoryCustomerRepo(cus []customer.Customer) *InMemoryCustomerRepo {
 	}
 }
 
-func (r *InMemoryCustomerRepo) FindById(id string) (*customer.Customer, error) {
+func (r *InMemoryCustomerRepo) FindById(_ context.Context, id string) (*customer.Customer, error) {
 	var c *customer.Customer
 	for _, v := range r.cus {
 		if v.ID == id {
@@ -25,7 +27,7 @@ func (r *InMemoryCustomerRepo) FindById(id string) (*customer.Customer, error) {
 	return c, nil
 }
 
-func (r *InMemoryCustomerRepo) FindByEmail(email string) (*customer.Customer, error) {
+func (r *InMemoryCustomerRepo) FindByEmail(_ context.Context, email string) (*customer.Customer, error) {
 	var c *customer.Customer
 	for _, v := range r.cus {
 		if v.Email == email {
@@ -36,7 +38,7 @@ func (r *InMemoryCustomerRepo) FindByEmail(email string) (*customer.Customer, er
 	return c, nil
 }
 
-func (r *InMemoryCustomerRepo) Save(cust *customer.Customer) (*customer.Customer, error) {
+func (r *InMemoryCustomerRepo) Save(_ context.Context, cust *customer.Customer) (*customer.Customer, error) {
 	r.cus = append(r.cus, *cust)
 	return cust, nil
 }

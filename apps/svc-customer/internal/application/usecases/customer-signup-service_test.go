@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -33,7 +34,7 @@ func TestCustomerSignup(t *testing.T) {
 			Password: "existing_password",
 		}
 
-		err := service.Execute(input)
+		err := service.Execute(context.Background(), input)
 		assert.Equal(t, err, customer.ErrCustomerAlreadyExists)
 		assert.NotNil(t, err)
 	})
@@ -46,7 +47,7 @@ func TestCustomerSignup(t *testing.T) {
 			Password: "any_password",
 		}
 
-		err := service.Execute(input)
+		err := service.Execute(context.Background(), input)
 		assert.Equal(t, err, errors.New("invalid customer name"))
 		assert.NotNil(t, err)
 	})

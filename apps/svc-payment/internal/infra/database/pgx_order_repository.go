@@ -18,15 +18,15 @@ func NewPgxOrderRepository() *PgxOrderRepository {
 	}
 }
 
-func (r *PgxOrderRepository) FindById(id string) (*order.Order, error) {
+func (r *PgxOrderRepository) FindById(ctx context.Context, id string) (*order.Order, error) {
 	rows, err := r.conn.Query(
-		context.Background(),
+		ctx,
 		`
-		SELECT 
-			o.*, 
+		SELECT
+			o.*,
 			ARRAY_AGG(ROW(p.id, p.order_id, p.status, p.created_at, p.updated_at)) AS payment_order_list
-		FROM "order" o 
-		INNER JOIN payment p ON o.id = p.order_id 
+		FROM "order" o
+		INNER JOIN payment p ON o.id = p.order_id
 		WHERE o.id = $1
 		GROUP BY o.id`,
 		id,
@@ -56,11 +56,11 @@ func (r *PgxOrderRepository) FindById(id string) (*order.Order, error) {
 	return orderList[0], nil
 }
 
-func (r *PgxOrderRepository) Save(o *order.Order) (*order.Order, error) {
+func (r *PgxOrderRepository) Save(ctx context.Context, o *order.Order) (*order.Order, error) {
 	_, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		`
-		INSERT INTO "order" (id, amount, status, payment_method, created_at, updated_at) 
+		INSERT INTO "order" (id, amount, status, payment_method, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6)`,
 		o.ID, o.Amount, o.Status, o.PaymentMethod, o.CreatedAt, o.UpdatedAt,
 	)
@@ -70,9 +70,9 @@ func (r *PgxOrderRepository) Save(o *order.Order) (*order.Order, error) {
 	return o, nil
 }
 
-func (r *PgxOrderRepository) Update(id, status string) error {
+func (r *PgxOrderRepository) Update(ctx context.Context, id, status string) error {
 	_, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		`
 		UPDATE "order" SET status = $1, updated_at = $2
 		WHERE id = $3

@@ -7,6 +7,7 @@ import (
 	"github.com/buemura/event-driven-commerce/api-gtw/config"
 	"github.com/buemura/event-driven-commerce/api-gtw/internal/modules/customer"
 	"github.com/buemura/event-driven-commerce/packages/pb"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -18,7 +19,7 @@ func NewCustomerGrpcService() *CustomerGrpcService {
 }
 
 func (*CustomerGrpcService) SignIn(in *customer.SignInRequest) (*customer.SignInResponse, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial svc-customer server: %v", err)
 	}
@@ -45,7 +46,7 @@ func (*CustomerGrpcService) SignIn(in *customer.SignInRequest) (*customer.SignIn
 }
 
 func (*CustomerGrpcService) SignUp(in *customer.SignUpRequest) (*customer.SignUpResponse, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial svc-customer server: %v", err)
 	}
@@ -65,7 +66,7 @@ func (*CustomerGrpcService) SignUp(in *customer.SignUpRequest) (*customer.SignUp
 }
 
 func (*CustomerGrpcService) GetCustomer(id string) (*customer.Customer, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_CUSTOMER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial svc-customer server: %v", err)
 	}

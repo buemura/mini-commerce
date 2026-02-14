@@ -4,6 +4,18 @@ networks:
   event_driven_commerce:
 
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.65.0
+    hostname: jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - event_driven_commerce
+
   rabbitmq:
     image: rabbitmq:3.8-management
     hostname: rabbitmq
@@ -28,79 +40,3 @@ services:
     command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096
     networks:
       - event_driven_commerce
-
-  # api-gtw:
-  #   build:
-  #     context: .
-  #     dockerfile: ./apps/api-gtw/Dockerfile
-  #   hostname: api-gtw
-  #   environment:
-  #     - PORT=8080
-  #     - GRPC_HOST_PRODUCT_SVC=svc-product:50050
-  #     - GRPC_HOST_CUSTOMER_SVC=svc-customer:50051
-  #     - GRPC_HOST_ORDER_SVC=svc-order:50052
-  #   depends_on:
-  #     - svc-product
-  #     - svc-customer
-  #     - svc-order
-  #   ports:
-  #     - "8080:8080"
-  #   networks:
-  #     - event_driven_commerce
-
-  # svc-customer:
-  #   build:
-  #     context: .
-  #     dockerfile: ./apps/svc-customer/Dockerfile
-  #   hostname: svc-customer
-  #   environment:
-  #     - GRPC_PORT=50051
-  #     - DATABASE_URL=postgresql://postgres:postgres@db-customer:5432/customer_svc
-  #     - JWT_SECRET="COFFEE_BLEND"
-  #   depends_on:
-  #     - db-customer
-  #   networks:
-  #     - event_driven_commerce
-
-  # svc-product:
-  #   build:
-  #     context: .
-  #     dockerfile: ./apps/svc-product/Dockerfile
-  #   hostname: svc-product
-  #   environment:
-  #     - GRPC_PORT=50050
-  #     - DATABASE_URL=postgresql://postgres:postgres@db-product:5432/product_svc
-  #   depends_on:
-  #     - db-product
-  #   networks:
-  #     - event_driven_commerce
-
-  # svc-order:
-  #   build:
-  #     context: .
-  #     dockerfile: ./apps/svc-order/Dockerfile
-  #   hostname: svc-order
-  #   environment:
-  #     - GRPC_PORT=50052
-  #     - GRPC_HOST_PRODUCT_SVC=svc-product:50050
-  #     - DATABASE_URL=postgresql://postgres:postgres@db-order:5432/order_svc
-  #   depends_on:
-  #     - db-order
-  #     - svc-product
-  #   networks:
-  #     - event_driven_commerce
-
-  # svc-payment:
-  #   build:
-  #     context: .
-  #     dockerfile: ./apps/svc-payment/Dockerfile
-  #   hostname: svc-payment
-  #   environment:
-  #     - BROKER_URL=amqp://guest:guest@rabbitmq:5672/
-  #     - DATABASE_URL=postgresql://postgres:postgres@db-payment:5432/payment_svc
-  #   depends_on:
-  #     - rabbitmq
-  #     - db-payment
-  #   restart: on-failure
-  #   networks:
-  #     - event_driven_commerce

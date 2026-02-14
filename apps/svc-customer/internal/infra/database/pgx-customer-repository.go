@@ -19,8 +19,8 @@ func NewPgxCustomerRepository(conn *pgxpool.Pool) *PgxCustomerRepository {
 	}
 }
 
-func (r *PgxCustomerRepository) FindById(id string) (*customer.Customer, error) {
-	rows, err := r.conn.Query(context.Background(), `SELECT * FROM customer WHERE id = $1`, id)
+func (r *PgxCustomerRepository) FindById(ctx context.Context, id string) (*customer.Customer, error) {
+	rows, err := r.conn.Query(ctx, `SELECT * FROM customer WHERE id = $1`, id)
 	c, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[customer.Customer])
 	if err != nil {
 		return nil, err
@@ -31,8 +31,8 @@ func (r *PgxCustomerRepository) FindById(id string) (*customer.Customer, error) 
 	return c[0], nil
 }
 
-func (r *PgxCustomerRepository) FindByEmail(email string) (*customer.Customer, error) {
-	rows, err := r.conn.Query(context.Background(), `SELECT * FROM customer WHERE email = $1`, email)
+func (r *PgxCustomerRepository) FindByEmail(ctx context.Context, email string) (*customer.Customer, error) {
+	rows, err := r.conn.Query(ctx, `SELECT * FROM customer WHERE email = $1`, email)
 	c, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[customer.Customer])
 	if err != nil {
 		return nil, err
@@ -43,9 +43,9 @@ func (r *PgxCustomerRepository) FindByEmail(email string) (*customer.Customer, e
 	return c[0], nil
 }
 
-func (r *PgxCustomerRepository) Save(cust *customer.Customer) (*customer.Customer, error) {
+func (r *PgxCustomerRepository) Save(ctx context.Context, cust *customer.Customer) (*customer.Customer, error) {
 	_, err := r.conn.Query(
-		context.Background(),
+		ctx,
 		`INSERT INTO customer (id, name, email, password) VALUES ($1, $2, $3, $4)`,
 		cust.ID, cust.Name, cust.Email, cust.Password,
 	)

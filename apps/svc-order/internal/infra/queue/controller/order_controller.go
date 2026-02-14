@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/buemura/event-driven-commerce/svc-order/internal/infra/queue"
 )
 
-func UpdateOrderStatus(payload string) {
+func UpdateOrderStatus(ctx context.Context, payload string) {
 	var in *order.UpdateOrderStatusIn
 	err := json.Unmarshal([]byte(payload), &in)
 	if err != nil {
@@ -19,10 +20,10 @@ func UpdateOrderStatus(payload string) {
 	log.Println("[QueueController][UpdateOrderStatus] - Init order status update for order:", in.OrderId)
 
 	uc := factory.MakeUpdateOrderStatusUsecase()
-	err = uc.Execute(in)
+	err = uc.Execute(ctx, in)
 	if err != nil {
 		log.Println("[QueueController][UpdateOrderStatus] - Error:", err.Error())
-		queue.Publish(&queue.PublishIn{
+		queue.Publish(ctx, &queue.PublishIn{
 			RoutingKey: "order.completed.dlq",
 			Payload:    payload,
 		})

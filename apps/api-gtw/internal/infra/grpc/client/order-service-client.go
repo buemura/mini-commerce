@@ -9,6 +9,7 @@ import (
 	"github.com/buemura/event-driven-commerce/api-gtw/internal/modules/order"
 	"github.com/buemura/event-driven-commerce/api-gtw/internal/shared"
 	"github.com/buemura/event-driven-commerce/packages/pb"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -20,7 +21,7 @@ func NewOrderGrpcService() *OrderGrpcService {
 }
 
 func (*OrderGrpcService) GetOrder(id string) (*order.Order, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial server: %v", err)
 	}
@@ -41,7 +42,7 @@ func (*OrderGrpcService) GetOrder(id string) (*order.Order, error) {
 }
 
 func (*OrderGrpcService) GetManyOrders(in *order.GetManyOrdersIn) (*order.GetManyOrdersOut, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial server: %v", err)
 	}
@@ -74,7 +75,7 @@ func (*OrderGrpcService) GetManyOrders(in *order.GetManyOrdersIn) (*order.GetMan
 }
 
 func (*OrderGrpcService) CreateOrder(in *order.CreateOrderIn) (*order.Order, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_ORDER_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial svc-order server: %v", err)
 	}

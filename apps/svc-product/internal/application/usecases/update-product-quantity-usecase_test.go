@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
@@ -40,7 +41,7 @@ func TestUpdateProductQuantityUsecase(t *testing.T) {
 	service := NewUpdateProductQuantityUsecase(repo)
 
 	t.Run("Return product struct", func(t *testing.T) {
-		res, _ := service.Execute(&product.UpdateProductQuantityIn{
+		res, _ := service.Execute(context.Background(), &product.UpdateProductQuantityIn{
 			ID:       3,
 			Quantity: -2,
 		})
@@ -55,7 +56,7 @@ func TestUpdateProductQuantityUsecase(t *testing.T) {
 	})
 
 	t.Run("Return ErrProductInsufficientQuantity when product has no enough quantity", func(t *testing.T) {
-		_, err := service.Execute(&product.UpdateProductQuantityIn{
+		_, err := service.Execute(context.Background(), &product.UpdateProductQuantityIn{
 			ID:       1,
 			Quantity: -15,
 		})
@@ -65,7 +66,7 @@ func TestUpdateProductQuantityUsecase(t *testing.T) {
 	})
 
 	t.Run("Return ErrProductNotFound when product does not exists", func(t *testing.T) {
-		_, err := service.Execute(&product.UpdateProductQuantityIn{
+		_, err := service.Execute(context.Background(), &product.UpdateProductQuantityIn{
 			ID:       99,
 			Quantity: -15,
 		})

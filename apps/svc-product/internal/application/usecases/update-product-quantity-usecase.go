@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
 )
 
@@ -14,8 +16,8 @@ func NewUpdateProductQuantityUsecase(repo product.ProductRepository) *UpdateProd
 	}
 }
 
-func (s *UpdateProductQuantityUsecase) Execute(in *product.UpdateProductQuantityIn) (*product.Product, error) {
-	prod, err := s.repo.FindById(in.ID)
+func (s *UpdateProductQuantityUsecase) Execute(ctx context.Context, in *product.UpdateProductQuantityIn) (*product.Product, error) {
+	prod, err := s.repo.FindById(ctx, in.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +31,7 @@ func (s *UpdateProductQuantityUsecase) Execute(in *product.UpdateProductQuantity
 		return nil, product.ErrProductInsufficientQuantity
 	}
 
-	res, err := s.repo.Update(prod)
+	res, err := s.repo.Update(ctx, prod)
 	if err != nil {
 		return nil, err
 	}

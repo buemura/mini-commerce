@@ -1,6 +1,10 @@
 package database
 
-import "github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
+import (
+	"context"
+
+	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/product"
+)
 
 type InMemoryProductRepo struct {
 	prod []*product.Product
@@ -12,14 +16,14 @@ func NewInMemoryProductRepo(prod []*product.Product) *InMemoryProductRepo {
 	}
 }
 
-func (r *InMemoryProductRepo) FindMany(in *product.GetManyProductsIn) (*product.ProductRepositoryPaginatedOut, error) {
+func (r *InMemoryProductRepo) FindMany(_ context.Context, in *product.GetManyProductsIn) (*product.ProductRepositoryPaginatedOut, error) {
 	return &product.ProductRepositoryPaginatedOut{
 		ProductList: r.prod,
 		TotalCount:  len(r.prod),
 	}, nil
 }
 
-func (r *InMemoryProductRepo) FindById(id int) (*product.Product, error) {
+func (r *InMemoryProductRepo) FindById(_ context.Context, id int) (*product.Product, error) {
 	var p *product.Product
 	for _, v := range r.prod {
 		if v.ID == id {
@@ -30,7 +34,7 @@ func (r *InMemoryProductRepo) FindById(id int) (*product.Product, error) {
 	return p, nil
 }
 
-func (r *InMemoryProductRepo) Update(newP *product.Product) (*product.Product, error) {
+func (r *InMemoryProductRepo) Update(_ context.Context, newP *product.Product) (*product.Product, error) {
 	var p *product.Product
 	for _, v := range r.prod {
 		if v.ID == newP.ID {

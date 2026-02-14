@@ -1,12 +1,15 @@
 package rabbit
 
 import (
+	"context"
 	"log"
 
+	"github.com/buemura/event-driven-commerce/packages/tracing"
 	"github.com/buemura/event-driven-commerce/svc-payment/config"
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/infra/queue/controller"
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/infra/util"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
 )
 
 type ConsumeIn struct {
@@ -37,7 +40,11 @@ func Consume(in *ConsumeIn) {
 	go func() {
 		for d := range msgs {
 			log.Printf("\n")
-			handleMessage(d)
+			ctx := tracing.ExtractAMQPContext(context.Background(), d.Headers)
+			tracer := otel.Tracer("svc-payment")
+			ctx, span := tracer.Start(ctx, "rabbitmq.consume "+d.RoutingKey)
+			handleMessage(ctx, d)
+			span.End()
 		}
 	}()
 
@@ -45,16 +52,15 @@ func Consume(in *ConsumeIn) {
 	<-forever
 }
 
-func handleMessage(d amqp.Delivery) {
-
+func handleMessage(ctx context.Context, d amqp.Delivery) {
 	switch d.RoutingKey {
 	case "order.create":
-		controller.CreateOrder(string(d.Body))
+		controller.CreateOrder(ctx, string(d.Body))
 	case "order.update":
-		controller.UpdateOrder(string(d.Body))
+		controller.UpdateOrder(ctx, string(d.Body))
 	case "payment.create":
-		controller.CreatePayment(string(d.Body))
+		controller.CreatePayment(ctx, string(d.Body))
 	case "payment.process":
-		controller.ProcessPayment(string(d.Body))
+		controller.ProcessPayment(ctx, string(d.Body))
 	}
 }

@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/domain/customer"
@@ -24,13 +25,13 @@ func TestCustomerGetService(t *testing.T) {
 	service := NewCustomerGetService(repo)
 
 	t.Run("Customer not found", func(t *testing.T) {
-		_, err := service.Execute("not_found_id")
+		_, err := service.Execute(context.Background(), "not_found_id")
 		assert.Equal(t, err, customer.ErrCustomerNotFound)
 		assert.NotNil(t, err)
 	})
 
 	t.Run("Customer get success", func(t *testing.T) {
-		res, _ := service.Execute("existing_id")
+		res, _ := service.Execute(context.Background(), "existing_id")
 		assert.Equal(t, &customer.CustomerOut{
 			ID:    "existing_id",
 			Name:  "existing_name",

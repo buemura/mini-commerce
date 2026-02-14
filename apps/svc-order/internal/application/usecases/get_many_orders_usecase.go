@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"math"
 
 	"github.com/buemura/event-driven-commerce/svc-order/internal/domain/common"
@@ -17,8 +18,8 @@ func NewGetManyOrdersUsecase(repo order.OrderRepository) *GetManyOrdersUsecase {
 	}
 }
 
-func (uc *GetManyOrdersUsecase) Execute(opt *order.GetManyOrdersIn) (*order.GetManyOrdersOut, error) {
-	res, err := uc.repo.FindMany(opt)
+func (uc *GetManyOrdersUsecase) Execute(ctx context.Context, opt *order.GetManyOrdersIn) (*order.GetManyOrdersOut, error) {
+	res, err := uc.repo.FindMany(ctx, opt)
 	if err != nil {
 		return nil, err
 	}

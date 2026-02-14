@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/domain/payment"
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/infra/util"
 )
@@ -15,8 +17,8 @@ func NewPaymentProcessUsecase(repo payment.PaymentRepository) *PaymentProcessUse
 	}
 }
 
-func (u *PaymentProcessUsecase) Execute(in *payment.ProcessPaymentIn) (*payment.Payment, error) {
-	p, err := u.repo.FindPendingByOrderId(in.OrderId)
+func (u *PaymentProcessUsecase) Execute(ctx context.Context, in *payment.ProcessPaymentIn) (*payment.Payment, error) {
+	p, err := u.repo.FindPendingByOrderId(ctx, in.OrderId)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +28,7 @@ func (u *PaymentProcessUsecase) Execute(in *payment.ProcessPaymentIn) (*payment.
 
 	p.Status = u.setPaymentStatus()
 
-	err = u.repo.Update(p.ID, string(p.Status))
+	err = u.repo.Update(ctx, p.ID, string(p.Status))
 	if err != nil {
 		return nil, err
 	}

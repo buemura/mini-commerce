@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/infra/database"
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/infra/grpc/controllers"
 	"github.com/buemura/event-driven-commerce/packages/pb"
+	"github.com/buemura/event-driven-commerce/packages/tracing"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 )
 
@@ -20,13 +23,20 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+	tp, err := tracing.InitTracer(ctx, "svc-customer")
+	if err != nil {
+		log.Fatalf("Failed to initialize tracer: %v", err)
+	}
+	defer tp.Shutdown(ctx)
+
 	port := ":" + config.GRPC_PORT
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("cannot create grpc listener: %s", err)
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	pb.RegisterCustomerServiceServer(s, &controllers.CustomerController{})
 
 	go func() {

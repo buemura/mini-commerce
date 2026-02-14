@@ -1,11 +1,14 @@
 package rabbit
 
 import (
+	"context"
 	"log"
 
+	"github.com/buemura/event-driven-commerce/packages/tracing"
 	"github.com/buemura/event-driven-commerce/svc-order/config"
 	"github.com/buemura/event-driven-commerce/svc-order/internal/infra/queue/controller"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
 )
 
 type ConsumeIn struct {
@@ -42,7 +45,11 @@ func Consume(in *ConsumeIn) {
 	go func() {
 		for d := range msgs {
 			log.Printf("\n")
-			handleMessage(d)
+			ctx := tracing.ExtractAMQPContext(context.Background(), d.Headers)
+			tracer := otel.Tracer("svc-order")
+			ctx, span := tracer.Start(ctx, "rabbitmq.consume "+d.RoutingKey)
+			handleMessage(ctx, d)
+			span.End()
 		}
 	}()
 
@@ -50,9 +57,9 @@ func Consume(in *ConsumeIn) {
 	<-forever
 }
 
-func handleMessage(d amqp.Delivery) {
+func handleMessage(ctx context.Context, d amqp.Delivery) {
 	switch d.RoutingKey {
 	case "order.completed":
-		controller.UpdateOrderStatus(string(d.Body))
+		controller.UpdateOrderStatus(ctx, string(d.Body))
 	}
 }

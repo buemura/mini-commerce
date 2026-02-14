@@ -5,9 +5,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/buemura/event-driven-commerce/packages/tracing"
 	"github.com/buemura/event-driven-commerce/svc-order/config"
 	"github.com/buemura/event-driven-commerce/svc-order/internal/application/contracts"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
 )
 
 type PublishIn struct {
@@ -16,9 +18,9 @@ type PublishIn struct {
 	Payload    string
 }
 
-func Publish(in *PublishIn) {
+func Publish(ctx context.Context, in *PublishIn) {
 	p := NewRabbitPublisher()
-	err := p.Publish(&contracts.PublishInput{
+	err := p.Publish(ctx, &contracts.PublishInput{
 		Exchange:   in.Exchange,
 		RoutingKey: in.RoutingKey,
 		Payload:    in.Payload,
@@ -34,7 +36,11 @@ func NewRabbitPublisher() *RabbitPublisher {
 	return &RabbitPublisher{}
 }
 
-func (p *RabbitPublisher) Publish(in *contracts.PublishInput) error {
+func (p *RabbitPublisher) Publish(ctx context.Context, in *contracts.PublishInput) error {
+	tracer := otel.Tracer("svc-order")
+	ctx, span := tracer.Start(ctx, "rabbitmq.publish "+in.RoutingKey)
+	defer span.End()
+
 	conn, err := amqp.Dial(config.BROKER_URL)
 	if err != nil {
 		log.Printf("[Queue][Publish] - Failed to connect to RabbitMQ: %s", err)
@@ -49,16 +55,19 @@ func (p *RabbitPublisher) Publish(in *contracts.PublishInput) error {
 	}
 	defer ch.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	pubCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	err = ch.PublishWithContext(ctx,
+	headers := tracing.InjectAMQPHeaders(ctx)
+
+	err = ch.PublishWithContext(pubCtx,
 		in.Exchange,   // exchange
 		in.RoutingKey, // routing key
 		false,         // mandatory
 		false,         // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
+			Headers:     headers,
 			Body:        []byte(in.Payload),
 		})
 	if err != nil {

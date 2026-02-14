@@ -33,7 +33,7 @@ func (c CustomerController) SignIn(
 	tkGen := adapters.NewJwtTokenGenerator()
 	usecase := usecases.NewCustomerSigninService(repo, hasher, tkGen)
 
-	res, err := usecase.Execute(&customer.SigninCustomerIn{
+	res, err := usecase.Execute(ctx, &customer.SigninCustomerIn{
 		Email:    in.Email,
 		Password: in.Password,
 	})
@@ -66,7 +66,7 @@ func (c CustomerController) SignUp(
 	hasher := adapters.NewBcryptPasswordHasher()
 	usecase := usecases.NewCustomerSignupService(repo, hasher)
 
-	err := usecase.Execute(&customer.CreateCustomerIn{
+	err := usecase.Execute(ctx, &customer.CreateCustomerIn{
 		Name:     in.Name,
 		Email:    in.Email,
 		Password: in.Password,
@@ -91,7 +91,7 @@ func (c CustomerController) GetCustomer(
 	repo := database.NewPgxCustomerRepository(database.Conn)
 	usecase := usecases.NewCustomerGetService(repo)
 
-	res, err := usecase.Execute(in.Id)
+	res, err := usecase.Execute(ctx, in.Id)
 	if err != nil {
 		log.Println("[GrpcServer][GetCustomer] - Error:", err.Error())
 		return nil, helper.HandleGrpcError(err)

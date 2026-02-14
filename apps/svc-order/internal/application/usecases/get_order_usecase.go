@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-order/internal/domain/order"
 )
 
@@ -14,8 +16,8 @@ func NewGetOrderUsecase(repo order.OrderRepository) *GetOrderUsecase {
 	}
 }
 
-func (s *GetOrderUsecase) Execute(id string) (*order.Order, error) {
-	ord, err := s.repo.FindById(id)
+func (s *GetOrderUsecase) Execute(ctx context.Context, id string) (*order.Order, error) {
+	ord, err := s.repo.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}

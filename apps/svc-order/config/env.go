@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	PORT                  string
-	GRPC_PORT             string
-	DATABASE_URL          string
-	GRPC_HOST_PRODUCT_SVC string
-	BROKER_URL            string
+	PORT                       string
+	GRPC_PORT                  string
+	DATABASE_URL               string
+	GRPC_HOST_PRODUCT_SVC      string
+	BROKER_URL                 string
+	OTEL_EXPORTER_OTLP_ENDPOINT string
 )
 
 func LoadEnv() {
@@ -24,6 +25,7 @@ func LoadEnv() {
 		DATABASE_URL = os.Getenv("DATABASE_URL")
 		GRPC_HOST_PRODUCT_SVC = os.Getenv("GRPC_HOST_PRODUCT_SVC")
 		BROKER_URL = os.Getenv("BROKER_URL")
+		OTEL_EXPORTER_OTLP_ENDPOINT = os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 		return
 	}
 
@@ -32,4 +34,5 @@ func LoadEnv() {
 	DATABASE_URL = viper.GetString("DATABASE_URL")
 	GRPC_HOST_PRODUCT_SVC = viper.GetString("GRPC_HOST_PRODUCT_SVC")
 	BROKER_URL = viper.GetString("BROKER_URL")
+	OTEL_EXPORTER_OTLP_ENDPOINT = viper.GetString("OTEL_EXPORTER_OTLP_ENDPOINT")
 }

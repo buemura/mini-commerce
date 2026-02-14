@@ -1,6 +1,10 @@
 package usecases
 
-import "github.com/buemura/event-driven-commerce/svc-customer/internal/domain/customer"
+import (
+	"context"
+
+	"github.com/buemura/event-driven-commerce/svc-customer/internal/domain/customer"
+)
 
 type CustomerGetService struct {
 	repo customer.CustomerRepository
@@ -12,8 +16,8 @@ func NewCustomerGetService(repo customer.CustomerRepository) *CustomerGetService
 	}
 }
 
-func (s *CustomerGetService) Execute(customerID string) (*customer.CustomerOut, error) {
-	cust, err := s.repo.FindById(customerID)
+func (s *CustomerGetService) Execute(ctx context.Context, customerID string) (*customer.CustomerOut, error) {
+	cust, err := s.repo.FindById(ctx, customerID)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/infra/queue"
 )
 
-func CreateOrder(payload string) {
+func CreateOrder(ctx context.Context, payload string) {
 	var in *order.CreateOrderIn
 	err := json.Unmarshal([]byte(payload), &in)
 	if err != nil {
@@ -20,10 +21,10 @@ func CreateOrder(payload string) {
 
 	repo := database.NewPgxOrderRepository()
 	uc := usecase.NewOrderCreateUsecase(repo)
-	o, err := uc.Execute(in)
+	o, err := uc.Execute(ctx, in)
 	if err != nil {
 		log.Println("[QueueController][CreateOrder] - Error:", err.Error())
-		queue.Publish(&queue.PublishIn{
+		queue.Publish(ctx, &queue.PublishIn{
 			RountingKey: "order.create.dlq",
 			Payload:     payload,
 		})
@@ -36,13 +37,13 @@ func CreateOrder(payload string) {
 		Amount:        o.Amount,
 		PaymentMethod: o.PaymentMethod,
 	})
-	queue.Publish(&queue.PublishIn{
+	queue.Publish(ctx, &queue.PublishIn{
 		RountingKey: "payment.create",
 		Payload:     string(paymentCreate),
 	})
 }
 
-func UpdateOrder(payload string) {
+func UpdateOrder(ctx context.Context, payload string) {
 	var in *order.UpdateOrderIn
 	err := json.Unmarshal([]byte(payload), &in)
 	if err != nil {
@@ -52,10 +53,10 @@ func UpdateOrder(payload string) {
 
 	repo := database.NewPgxOrderRepository()
 	uc := usecase.NewOrderUpdateUsecase(repo)
-	o, err := uc.Execute(in)
+	o, err := uc.Execute(ctx, in)
 	if err != nil {
 		log.Println("[QueueController][UpdateOrder] - Error:", err.Error())
-		queue.Publish(&queue.PublishIn{
+		queue.Publish(ctx, &queue.PublishIn{
 			RountingKey: "order.create.dlq",
 			Payload:     payload,
 		})

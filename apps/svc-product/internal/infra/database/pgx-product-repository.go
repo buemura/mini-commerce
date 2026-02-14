@@ -18,8 +18,8 @@ func NewPgxProductRepository(conn *pgxpool.Pool) *PgxProductRepository {
 	}
 }
 
-func (r *PgxProductRepository) FindById(id int) (*product.Product, error) {
-	rows, err := r.conn.Query(context.Background(), `SELECT * FROM product WHERE id = $1`, id)
+func (r *PgxProductRepository) FindById(ctx context.Context, id int) (*product.Product, error) {
+	rows, err := r.conn.Query(ctx, `SELECT * FROM product WHERE id = $1`, id)
 	p, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[product.Product])
 	if err != nil {
 		return nil, err
@@ -30,18 +30,18 @@ func (r *PgxProductRepository) FindById(id int) (*product.Product, error) {
 	return p[0], nil
 }
 
-func (r *PgxProductRepository) FindMany(in *product.GetManyProductsIn) (*product.ProductRepositoryPaginatedOut, error) {
+func (r *PgxProductRepository) FindMany(ctx context.Context, in *product.GetManyProductsIn) (*product.ProductRepositoryPaginatedOut, error) {
 	limit := in.Items
 	offset := (in.Page - 1) * in.Items
 
-	rows, err := r.conn.Query(context.Background(), `SELECT * FROM product LIMIT $1 OFFSET $2`, limit, offset)
+	rows, err := r.conn.Query(ctx, `SELECT * FROM product LIMIT $1 OFFSET $2`, limit, offset)
 	p, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[product.Product])
 	if err != nil {
 		return nil, err
 	}
 
 	var totalCount int
-	err = r.conn.QueryRow(context.Background(), `SELECT count(id) as total_count FROM product`).Scan(&totalCount)
+	err = r.conn.QueryRow(ctx, `SELECT count(id) as total_count FROM product`).Scan(&totalCount)
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +52,12 @@ func (r *PgxProductRepository) FindMany(in *product.GetManyProductsIn) (*product
 	}, nil
 }
 
-func (r *PgxProductRepository) Update(newP *product.Product) (*product.Product, error) {
+func (r *PgxProductRepository) Update(ctx context.Context, newP *product.Product) (*product.Product, error) {
 	res, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		`
-		UPDATE product 
-		SET name = $1, description = $2, price = $3, quantity = $4, image_url = $5 
+		UPDATE product
+		SET name = $1, description = $2, price = $3, quantity = $4, image_url = $5
 		WHERE id = $6
 		`,
 		newP.Name, newP.Description, newP.Price, newP.Quantity, newP.ImageUrl,

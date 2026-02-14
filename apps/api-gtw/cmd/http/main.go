@@ -11,8 +11,10 @@ import (
 
 	"github.com/buemura/event-driven-commerce/api-gtw/config"
 	"github.com/buemura/event-driven-commerce/api-gtw/internal/infra/http/router"
+	"github.com/buemura/event-driven-commerce/packages/tracing"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 func init() {
@@ -20,8 +22,16 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+	tp, err := tracing.InitTracer(ctx, "api-gtw")
+	if err != nil {
+		log.Fatalf("Failed to initialize tracer: %v", err)
+	}
+	defer tp.Shutdown(ctx)
+
 	server := echo.New()
 	server.Use(middleware.CORS())
+	server.Use(otelecho.Middleware("api-gtw"))
 
 	router.SetupRouters(server)
 
@@ -38,11 +48,11 @@ func main() {
 	signal.Notify(stop, syscall.SIGTERM, os.Interrupt, syscall.SIGINT)
 	<-stop
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	log.Println("Stopping HTTP Server...")
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		panic(err)
 	}
 	log.Println("HTTP Server stopped")

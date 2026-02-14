@@ -1,5 +1,7 @@
 package contracts
 
+import "context"
+
 type PublishInput struct {
 	Exchange   string
 	Queue      string
@@ -8,5 +10,5 @@ type PublishInput struct {
 }
 
 type QueuePublisher interface {
-	Publish(in *PublishInput) error
+	Publish(ctx context.Context, in *PublishInput) error
 }

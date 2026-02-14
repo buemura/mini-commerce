@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/application/contracts"
 	"github.com/buemura/event-driven-commerce/svc-customer/internal/domain/customer"
 )
@@ -23,8 +25,8 @@ func NewCustomerSigninService(
 	}
 }
 
-func (s *CustomerSigninService) Execute(in *customer.SigninCustomerIn) (*customer.SigninCustomerOut, error) {
-	cust, err := s.repo.FindByEmail(in.Email)
+func (s *CustomerSigninService) Execute(ctx context.Context, in *customer.SigninCustomerIn) (*customer.SigninCustomerOut, error) {
+	cust, err := s.repo.FindByEmail(ctx, in.Email)
 	if err != nil {
 		return nil, err
 	}

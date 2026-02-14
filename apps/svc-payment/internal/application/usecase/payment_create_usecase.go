@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/buemura/event-driven-commerce/svc-payment/internal/domain/payment"
 )
 
@@ -14,13 +16,13 @@ func NewPaymentCreateUsecase(repo payment.PaymentRepository) *PaymentCreateUseca
 	}
 }
 
-func (u *PaymentCreateUsecase) Execute(in *payment.CreatePaymentIn) (*payment.Payment, error) {
+func (u *PaymentCreateUsecase) Execute(ctx context.Context, in *payment.CreatePaymentIn) (*payment.Payment, error) {
 	p, err := payment.NewPayment(in)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = u.repo.Save(p)
+	_, err = u.repo.Save(ctx, p)
 	if err != nil {
 		return nil, err
 	}

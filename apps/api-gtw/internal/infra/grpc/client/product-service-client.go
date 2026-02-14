@@ -8,6 +8,7 @@ import (
 	"github.com/buemura/event-driven-commerce/api-gtw/internal/modules/product"
 	"github.com/buemura/event-driven-commerce/api-gtw/internal/shared"
 	"github.com/buemura/event-driven-commerce/packages/pb"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -19,7 +20,7 @@ func NewProductGrpcService() *ProductGrpcService {
 }
 
 func (*ProductGrpcService) GetProduct(id int) (*product.Product, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_PRODUCT_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_PRODUCT_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial server: %v", err)
 	}
@@ -47,7 +48,7 @@ func (*ProductGrpcService) GetProduct(id int) (*product.Product, error) {
 }
 
 func (*ProductGrpcService) GetManyProducts(in *product.GetManyProductsIn) (*product.GetManyProductsOut, error) {
-	conn, err := grpc.Dial(config.GRPC_HOST_PRODUCT_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(config.GRPC_HOST_PRODUCT_SVC, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		log.Fatalf("Failed to dial server: %v", err)
 	}

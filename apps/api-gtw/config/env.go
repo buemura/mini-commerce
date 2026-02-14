@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	PORT                   string
-	GRPC_HOST_PRODUCT_SVC  string
-	GRPC_HOST_CUSTOMER_SVC string
-	GRPC_HOST_ORDER_SVC    string
+	PORT                        string
+	GRPC_HOST_PRODUCT_SVC       string
+	GRPC_HOST_CUSTOMER_SVC      string
+	GRPC_HOST_ORDER_SVC         string
+	OTEL_EXPORTER_OTLP_ENDPOINT string
 )
 
 func LoadEnv() {
@@ -22,6 +23,7 @@ func LoadEnv() {
 		GRPC_HOST_PRODUCT_SVC = os.Getenv("GRPC_HOST_PRODUCT_SVC")
 		GRPC_HOST_CUSTOMER_SVC = os.Getenv("GRPC_HOST_CUSTOMER_SVC")
 		GRPC_HOST_ORDER_SVC = os.Getenv("GRPC_HOST_ORDER_SVC")
+		OTEL_EXPORTER_OTLP_ENDPOINT = os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 		return
 	}
 
@@ -29,4 +31,5 @@ func LoadEnv() {
 	GRPC_HOST_PRODUCT_SVC = viper.GetString("GRPC_HOST_PRODUCT_SVC")
 	GRPC_HOST_CUSTOMER_SVC = viper.GetString("GRPC_HOST_CUSTOMER_SVC")
 	GRPC_HOST_ORDER_SVC = viper.GetString("GRPC_HOST_ORDER_SVC")
+	OTEL_EXPORTER_OTLP_ENDPOINT = viper.GetString("OTEL_EXPORTER_OTLP_ENDPOINT")
 }

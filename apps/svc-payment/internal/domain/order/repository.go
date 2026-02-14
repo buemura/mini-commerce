@@ -1,12 +1,14 @@
 package order
 
+import "context"
+
 type OrderRepositoryPaginatedOut struct {
 	OrderList  []*Order
 	TotalCount int
 }
 
 type OrderRepository interface {
-	FindById(string) (*Order, error)
-	Save(*Order) (*Order, error)
-	Update(id, status string) error
+	FindById(ctx context.Context, id string) (*Order, error)
+	Save(ctx context.Context, o *Order) (*Order, error)
+	Update(ctx context.Context, id, status string) error
 }

@@ -33,7 +33,7 @@ func (c OrderController) GetManyOrders(
 
 	usecase := factory.MakeGetManyOrdersUsecase()
 
-	res, err := usecase.Execute(&order.GetManyOrdersIn{
+	res, err := usecase.Execute(ctx, &order.GetManyOrdersIn{
 		Page:  page,
 		Items: items,
 	})
@@ -70,7 +70,7 @@ func (c OrderController) GetOrder(
 
 	usecase := factory.MakeGetOrderUsecase()
 
-	o, err := usecase.Execute(in.Id)
+	o, err := usecase.Execute(ctx, in.Id)
 	if err != nil {
 		log.Println("[GrpcServer][GetOrder] - Error:", err.Error())
 		return nil, helper.HandleGrpcError(err)
@@ -108,7 +108,7 @@ func (c OrderController) CreateOrder(
 		})
 	}
 
-	o, err := usecase.Execute(&order.CreateOrderIn{
+	o, err := usecase.Execute(ctx, &order.CreateOrderIn{
 		CustomerId:    in.CustomerId,
 		ProductList:   productList,
 		PaymentMethod: in.PaymentMethod,

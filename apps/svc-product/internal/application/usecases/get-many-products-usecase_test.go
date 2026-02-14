@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"context"
 	"testing"
 
 	"github.com/buemura/event-driven-commerce/svc-product/internal/domain/common"
@@ -41,7 +42,7 @@ func TestGetManyProductsUsecase(t *testing.T) {
 	service := NewGetManyProductUsecase(repo)
 
 	t.Run("Return product slice", func(t *testing.T) {
-		res, _ := service.Execute(&product.GetManyProductsIn{
+		res, _ := service.Execute(context.Background(), &product.GetManyProductsIn{
 			Page:  1,
 			Items: 10,
 		})
