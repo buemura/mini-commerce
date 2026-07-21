@@ -1,4 +1,4 @@
-# Event Driven Commerce
+# Mini Commerce
 
 ## Overview
 
@@ -38,14 +38,14 @@ The **API Gateway** serves REST endpoints to the frontend and internally perform
 
 ## Services
 
-| Service | Type | Port | Description |
-|---|---|---|---|
-| `mc-api-gateway` | HTTP (REST) | 8080 | API Gateway — routes requests to backend services via gRPC |
-| `mc-customer-service` | gRPC | 50051 | Customer registration, authentication (JWT + bcrypt) |
-| `mc-product-service` | gRPC | 50050 | Product catalog and inventory management |
-| `mc-order-service` | gRPC + Queue | 50052 | Order creation and lifecycle management |
-| `mc-payment-service` | Queue Consumer | — | Processes payments asynchronously, publishes completion events |
-| `mc-frontend` | Vite Dev Server | 5173 | React frontend |
+| Service               | Type            | Port  | Description                                                    |
+| --------------------- | --------------- | ----- | -------------------------------------------------------------- |
+| `mc-api-gateway`      | HTTP (REST)     | 8080  | API Gateway — routes requests to backend services via gRPC     |
+| `mc-customer-service` | gRPC            | 50051 | Customer registration, authentication (JWT + bcrypt)           |
+| `mc-product-service`  | gRPC            | 50050 | Product catalog and inventory management                       |
+| `mc-order-service`    | gRPC + Queue    | 50052 | Order creation and lifecycle management                        |
+| `mc-payment-service`  | Queue Consumer  | —     | Processes payments asynchronously, publishes completion events |
+| `mc-frontend`         | Vite Dev Server | 5173  | React frontend                                                 |
 
 ## Event-Driven Flow
 
@@ -62,13 +62,13 @@ The order payment flow uses RabbitMQ for asynchronous processing:
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/auth/signup` | Register a new customer |
-| `POST` | `/api/auth/signin` | Sign in and receive JWT |
-| `GET` | `/api/products` | List products (paginated) |
-| `POST` | `/api/orders` | Create a new order (protected) |
-| `GET` | `/api/orders` | Get user orders (protected) |
+| Method | Endpoint           | Description                    |
+| ------ | ------------------ | ------------------------------ |
+| `POST` | `/api/auth/signup` | Register a new customer        |
+| `POST` | `/api/auth/signin` | Sign in and receive JWT        |
+| `GET`  | `/api/products`    | List products (paginated)      |
+| `POST` | `/api/orders`      | Create a new order (protected) |
+| `GET`  | `/api/orders`      | Get user orders (protected)    |
 
 ## How to Run
 
@@ -91,26 +91,26 @@ Each service can be run individually from its directory:
 
 ```bash
 # Example: run the API Gateway
-cd apps/mc-api-gateway && make run
+cd mc-api-gateway && make run
 
 # Example: run the Order Service
-cd apps/mc-order-service && make run
+cd mc-order-service && make run
 ```
 
 ### Run Frontend
 
 ```bash
-cd apps/mc-frontend
+cd mc-frontend
 npm install
 npm run dev
 ```
 
 ### Useful URLs
 
-| Service | URL |
-|---|---|
-| API Gateway | http://localhost:8080 |
-| Jaeger UI | http://localhost:16686 |
+| Service             | URL                    |
+| ------------------- | ---------------------- |
+| API Gateway         | http://localhost:8080  |
+| Jaeger UI           | http://localhost:16686 |
 | RabbitMQ Management | http://localhost:15672 |
 
 ## Screenshots
@@ -138,17 +138,16 @@ npm run dev
 ## Project Structure
 
 ```
-├── apps/
-│   ├── mc-api-gateway/       # REST API Gateway (Echo)
-│   ├── mc-customer-service/  # Customer Service (gRPC)
-│   ├── mc-order-service/     # Order Service (gRPC + Queue Consumer)
-│   ├── mc-payment-service/   # Payment Service (Queue Consumer)
-│   ├── mc-product-service/   # Product Service (gRPC)
-│   └── mc-frontend/          # React Frontend (Vite)
+├── mc-api-gateway/       # REST API Gateway (Echo)
+├── mc-customer-service/  # Customer Service (gRPC)
+├── mc-order-service/     # Order Service (gRPC + Queue Consumer)
+├── mc-payment-service/   # Payment Service (Queue Consumer)
+├── mc-product-service/   # Product Service (gRPC)
+├── mc-frontend/          # React Frontend (Vite)
 ├── packages/
-│   ├── grpc/                 # Shared protobuf definitions
-│   └── tracing/              # OpenTelemetry tracing utilities
-├── configs/                  # Configuration files
-├── scripts/                  # Deployment and setup scripts
-└── docs/                     # Architecture diagrams and screenshots
+│   ├── grpc/             # Shared protobuf definitions
+│   └── tracing/          # OpenTelemetry tracing utilities
+├── configs/              # Configuration files
+├── scripts/              # Deployment and setup scripts
+└── docs/                 # Architecture diagrams and screenshots
 ```

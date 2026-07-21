@@ -1,14 +1,13 @@
 # Base
 FROM golang:1.26-alpine3.19 as base
-WORKDIR /go/packages
+WORKDIR /go/src/packages
 COPY ./packages/ ./
 RUN go mod download
 
 WORKDIR /go/src/app
-COPY ./apps/mc-api-gateway/go.mod ./
-COPY ./apps/mc-api-gateway/go.sum ./
-RUN sed -i 's|../../packages|../packages|g' "/go/src/app/go.mod"
-COPY ./apps/mc-api-gateway/ ./
+COPY ./mc-api-gateway/go.mod ./
+COPY ./mc-api-gateway/go.sum ./
+COPY ./mc-api-gateway/ ./
 RUN go mod download
 RUN go build -o main ./cmd/http
 

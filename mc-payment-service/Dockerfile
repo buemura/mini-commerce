@@ -1,10 +1,13 @@
 # Base
 FROM golang:1.26-alpine3.19 as base
+WORKDIR /go/src/packages
+COPY ./packages/ ./
+RUN go mod download
 
 WORKDIR /go/src/app
-COPY ./apps/mc-payment-service/go.mod ./
-COPY ./apps/mc-payment-service/go.sum ./
-COPY ./apps/mc-payment-service/ ./
+COPY ./mc-payment-service/go.mod ./
+COPY ./mc-payment-service/go.sum ./
+COPY ./mc-payment-service/ ./
 RUN go mod download
 RUN go build -o main ./cmd/queue
 

@@ -1,14 +1,13 @@
 # Base
 FROM golang:1.26-alpine3.19 as base
-WORKDIR /go/packages
+WORKDIR /go/src/packages
 COPY ./packages/ ./
 RUN go mod download
 
 WORKDIR /go/src/app
-COPY ./apps/mc-customer-service/go.mod ./
-COPY ./apps/mc-customer-service/go.sum ./
-RUN sed -i 's|../../packages|../packages|g' "/go/src/app/go.mod"
-COPY ./apps/mc-customer-service/ ./
+COPY ./mc-product-service/go.mod ./
+COPY ./mc-product-service/go.sum ./
+COPY ./mc-product-service/ ./
 RUN go mod download
 RUN go build -o main ./cmd/grpc
 
