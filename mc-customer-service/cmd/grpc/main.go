@@ -11,6 +11,7 @@ import (
 	"github.com/buemura/event-driven-commerce/mc-customer-service/config"
 	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/infra/database"
 	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/infra/grpc/controllers"
+	"github.com/buemura/event-driven-commerce/packages/metrics"
 	"github.com/buemura/event-driven-commerce/packages/pb"
 	"github.com/buemura/event-driven-commerce/packages/tracing"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -29,6 +30,15 @@ func main() {
 		log.Fatalf("Failed to initialize tracer: %v", err)
 	}
 	defer tp.Shutdown(ctx)
+
+	mp, err := metrics.InitMeter(ctx, "mc-customer-service")
+	if err != nil {
+		log.Fatalf("Failed to initialize meter: %v", err)
+	}
+	defer mp.Shutdown(ctx)
+
+	metricsServer := metrics.Serve()
+	defer metricsServer.Shutdown(ctx)
 
 	port := ":" + config.GRPC_PORT
 	listener, err := net.Listen("tcp", port)

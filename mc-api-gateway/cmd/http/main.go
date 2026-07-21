@@ -11,7 +11,9 @@ import (
 
 	"github.com/buemura/event-driven-commerce/mc-api-gateway/config"
 	"github.com/buemura/event-driven-commerce/mc-api-gateway/internal/infra/http/router"
+	"github.com/buemura/event-driven-commerce/packages/metrics"
 	"github.com/buemura/event-driven-commerce/packages/tracing"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
@@ -29,9 +31,19 @@ func main() {
 	}
 	defer tp.Shutdown(ctx)
 
+	mp, err := metrics.InitMeter(ctx, "mc-api-gateway")
+	if err != nil {
+		log.Fatalf("Failed to initialize meter: %v", err)
+	}
+	defer mp.Shutdown(ctx)
+
+	metricsServer := metrics.Serve()
+	defer metricsServer.Shutdown(ctx)
+
 	server := echo.New()
 	server.Use(middleware.CORS())
 	server.Use(otelecho.Middleware("mc-api-gateway"))
+	server.Use(echoprometheus.NewMiddleware("mc_api_gateway"))
 
 	router.SetupRouters(server)
 

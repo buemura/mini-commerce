@@ -1,0 +1,123 @@
+{
+  "uid": "mini-commerce-overview",
+  "title": "Mini Commerce Overview",
+  "tags": ["mini-commerce"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API Gateway - request rate by status",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (code) (rate(mc_api_gateway_requests_total[5m]))",
+          "legendFormat": "{{code}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "API Gateway - p95 latency by route",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, url) (rate(mc_api_gateway_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{url}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC - server call rate by method",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum by (service, rpc_method) (rate(rpc_server_call_duration_seconds_count[5m]))",
+          "legendFormat": "{{service}} {{rpc_method}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC - non-OK server calls",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum by (service, rpc_method, rpc_response_status_code) (rate(rpc_server_call_duration_seconds_count{rpc_response_status_code!=\"OK\"}[5m]))",
+          "legendFormat": "{{service}} {{rpc_method}} {{rpc_response_status_code}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "gRPC - p95 server call duration",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, service, rpc_method) (rate(rpc_server_call_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{service}} {{rpc_method}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Postgres - p95 query duration",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, service, pgx_operation_type) (rate(db_client_operation_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{service}} {{pgx_operation_type}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Goroutines",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "sum by (service) (go_goroutine_count)",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Go memory used",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "targets": [
+        {
+          "expr": "sum by (service) (go_memory_used_bytes)",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Scrape targets up",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "targets": [
+        {
+          "expr": "up{job=\"mini-commerce\"}",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    }
+  ]
+}

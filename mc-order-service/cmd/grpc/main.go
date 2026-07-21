@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/buemura/event-driven-commerce/packages/metrics"
 	"github.com/buemura/event-driven-commerce/packages/pb"
 	"github.com/buemura/event-driven-commerce/packages/tracing"
 	"github.com/buemura/event-driven-commerce/mc-order-service/config"
@@ -31,6 +32,15 @@ func main() {
 		log.Fatalf("Failed to initialize tracer: %v", err)
 	}
 	defer tp.Shutdown(ctx)
+
+	mp, err := metrics.InitMeter(ctx, "mc-order-service")
+	if err != nil {
+		log.Fatalf("Failed to initialize meter: %v", err)
+	}
+	defer mp.Shutdown(ctx)
+
+	metricsServer := metrics.Serve()
+	defer metricsServer.Shutdown(ctx)
 
 	port := ":" + config.GRPC_PORT
 	listener, err := net.Listen("tcp", port)

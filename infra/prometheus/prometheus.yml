@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: mini-commerce
+    static_configs:
+      - targets: ["product-service:9100"]
+        labels: { service: product-service }
+      - targets: ["customer-service:9100"]
+        labels: { service: customer-service }
+      - targets: ["order-service:9100"]
+        labels: { service: order-service }
+      - targets: ["payment-service:9100"]
+        labels: { service: payment-service }
+      - targets: ["api-gateway:9100"]
+        labels: { service: api-gateway }

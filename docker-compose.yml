@@ -3,8 +3,54 @@ networks:
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
 
 services:
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    hostname: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - event_driven_commerce
+
+  grafana:
+    image: grafana/grafana:11.5.1
+    hostname: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - event_driven_commerce
+
   jaeger:
     image: jaegertracing/all-in-one:1.65.0
     hostname: jaeger
@@ -63,10 +109,12 @@ services:
     hostname: product-service
     ports:
       - "50050:50050"
+      - "9101:9100"
     environment:
       GRPC_PORT: 50050
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/product_service
       OTEL_EXPORTER_OTLP_ENDPOINT: jaeger:4317
+      METRICS_PORT: 9100
     depends_on:
       postgres:
         condition: service_healthy
@@ -80,11 +128,13 @@ services:
     hostname: customer-service
     ports:
       - "50051:50051"
+      - "9102:9100"
     environment:
       GRPC_PORT: 50051
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/customer_service
       JWT_SECRET: secret
       OTEL_EXPORTER_OTLP_ENDPOINT: jaeger:4317
+      METRICS_PORT: 9100
     depends_on:
       postgres:
         condition: service_healthy
@@ -98,12 +148,14 @@ services:
     hostname: order-service
     ports:
       - "50052:50052"
+      - "9103:9100"
     environment:
       GRPC_PORT: 50052
       GRPC_HOST_PRODUCT_SVC: product-service:50050
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/order_service
       BROKER_URL: amqp://guest:guest@rabbitmq:5672/
       OTEL_EXPORTER_OTLP_ENDPOINT: jaeger:4317
+      METRICS_PORT: 9100
     depends_on:
       postgres:
         condition: service_healthy
@@ -119,10 +171,13 @@ services:
       context: .
       dockerfile: ./mc-payment-service/Dockerfile
     hostname: payment-service
+    ports:
+      - "9104:9100"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/payment_service
       BROKER_URL: amqp://guest:guest@rabbitmq:5672/
       OTEL_EXPORTER_OTLP_ENDPOINT: jaeger:4317
+      METRICS_PORT: 9100
     depends_on:
       postgres:
         condition: service_healthy
@@ -138,12 +193,14 @@ services:
     hostname: api-gateway
     ports:
       - "8080:8080"
+      - "9105:9100"
     environment:
       PORT: 8080
       GRPC_HOST_PRODUCT_SVC: product-service:50050
       GRPC_HOST_CUSTOMER_SVC: customer-service:50051
       GRPC_HOST_ORDER_SVC: order-service:50052
       OTEL_EXPORTER_OTLP_ENDPOINT: jaeger:4317
+      METRICS_PORT: 9100
     depends_on:
       product-service:
         condition: service_started

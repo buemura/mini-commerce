@@ -1,5 +1,5 @@
 COMPOSE=docker compose
-INFRA=postgres rabbitmq jaeger
+INFRA=postgres rabbitmq jaeger prometheus grafana
 APPS=product-service customer-service order-service payment-service api-gateway frontend
 SERVICES=mc-product-service mc-customer-service mc-order-service mc-payment-service
 GOOSE=$(shell go env GOPATH)/bin/goose
@@ -13,6 +13,8 @@ up: infra-up db-init migrate-up apps-up
 	@echo "api-gateway -> http://localhost:8080"
 	@echo "rabbitmq    -> http://localhost:15672 (guest/guest)"
 	@echo "jaeger      -> http://localhost:16686"
+	@echo "prometheus  -> http://localhost:9090"
+	@echo "grafana     -> http://localhost:3001 (admin/admin)"
 
 ## Start infra only and wait for the healthchecks to pass
 infra-up:

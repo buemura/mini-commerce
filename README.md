@@ -20,6 +20,7 @@ The **API Gateway** serves REST endpoints to the frontend and internally perform
 - **RabbitMQ** — async messaging with dead-letter queues
 - **PostgreSQL** — database per service
 - **OpenTelemetry + Jaeger** — distributed tracing
+- **Prometheus + Grafana** — metrics and dashboards
 - **Goose** — database migrations
 
 ### Frontend
@@ -112,6 +113,12 @@ npm run dev
 | API Gateway         | http://localhost:8080  |
 | Jaeger UI           | http://localhost:16686 |
 | RabbitMQ Management | http://localhost:15672 |
+| Prometheus          | http://localhost:9090  |
+| Grafana             | http://localhost:3001 (admin/admin) |
+
+Every backend service exposes Prometheus metrics on its own port (`METRICS_PORT`,
+default `9100`), published to the host as `9101` product, `9102` customer,
+`9103` order, `9104` payment and `9105` api-gateway.
 
 ## Screenshots
 
@@ -146,7 +153,9 @@ npm run dev
 ├── mc-frontend/          # React Frontend (Vite)
 ├── packages/
 │   ├── grpc/             # Shared protobuf definitions
+│   ├── metrics/          # Prometheus metrics endpoint + OTel meter setup
 │   └── tracing/          # OpenTelemetry tracing utilities
+├── infra/                # Prometheus config and Grafana provisioning
 ├── configs/              # Configuration files
 ├── scripts/              # Deployment and setup scripts
 └── docs/                 # Architecture diagrams and screenshots
