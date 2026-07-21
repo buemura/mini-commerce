@@ -2,7 +2,7 @@ APP_NAME=mc-customer-service
 MAIN_PATH=cmd/grpc/main.go
 MIGRATIONS_DIR=migrations
 GOOSE=$(shell go env GOPATH)/bin/goose
-DATABASE_URL?=postgresql://postgres:postgres@localhost:5432/edc_svc_customer
+DATABASE_URL?=postgresql://postgres:postgres@localhost:5432/customer_service
 
 .PHONY: run build test clean migrate-up migrate-down migrate-status migrate-create
 

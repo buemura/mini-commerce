@@ -2,7 +2,7 @@ APP_NAME=mc-payment-service
 MAIN_PATH=cmd/queue/main.go
 MIGRATIONS_DIR=migrations
 GOOSE=$(shell go env GOPATH)/bin/goose
-DATABASE_URL?=postgresql://postgres:postgres@localhost:5432/edc_svc_payment
+DATABASE_URL?=postgresql://postgres:postgres@localhost:5432/payment_service
 
 .PHONY: run build test clean migrate-up migrate-down migrate-status migrate-create
 

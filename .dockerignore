@@ -1,0 +1,7 @@
+.git
+.claude
+docs
+**/node_modules
+**/dist
+**/bin
+**/.env
