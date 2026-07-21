@@ -1,0 +1,31 @@
+package usecase
+
+import (
+	"context"
+
+	"github.com/buemura/event-driven-commerce/mc-payment-service/internal/domain/payment"
+)
+
+type PaymentCreateUsecase struct {
+	repo payment.PaymentRepository
+}
+
+func NewPaymentCreateUsecase(repo payment.PaymentRepository) *PaymentCreateUsecase {
+	return &PaymentCreateUsecase{
+		repo: repo,
+	}
+}
+
+func (u *PaymentCreateUsecase) Execute(ctx context.Context, in *payment.CreatePaymentIn) (*payment.Payment, error) {
+	p, err := payment.NewPayment(in)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = u.repo.Save(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, err
+}

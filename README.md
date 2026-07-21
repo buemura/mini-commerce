@@ -4,7 +4,7 @@
 
 An ecommerce application built applying concepts of distributed systems, microservices, and event-driven architecture.
 
-The **API Gateway** serves REST endpoints to the frontend and internally performs gRPC calls to backend microservices. Additionally, there is an asynchronous communication flow for order payment where `svc-order` publishes events to RabbitMQ and `svc-payment` processes them asynchronously, updating order status upon completion.
+The **API Gateway** serves REST endpoints to the frontend and internally performs gRPC calls to backend microservices. Additionally, there is an asynchronous communication flow for order payment where `mc-order-service` publishes events to RabbitMQ and `mc-payment-service` processes them asynchronously, updating order status upon completion.
 
 ## Architecture Diagram
 
@@ -40,12 +40,12 @@ The **API Gateway** serves REST endpoints to the frontend and internally perform
 
 | Service | Type | Port | Description |
 |---|---|---|---|
-| `api-gtw` | HTTP (REST) | 8080 | API Gateway — routes requests to backend services via gRPC |
-| `svc-customer` | gRPC | 50051 | Customer registration, authentication (JWT + bcrypt) |
-| `svc-product` | gRPC | 50050 | Product catalog and inventory management |
-| `svc-order` | gRPC + Queue | 50052 | Order creation and lifecycle management |
-| `svc-payment` | Queue Consumer | — | Processes payments asynchronously, publishes completion events |
-| `web` | Vite Dev Server | 5173 | React frontend |
+| `mc-api-gateway` | HTTP (REST) | 8080 | API Gateway — routes requests to backend services via gRPC |
+| `mc-customer-service` | gRPC | 50051 | Customer registration, authentication (JWT + bcrypt) |
+| `mc-product-service` | gRPC | 50050 | Product catalog and inventory management |
+| `mc-order-service` | gRPC + Queue | 50052 | Order creation and lifecycle management |
+| `mc-payment-service` | Queue Consumer | — | Processes payments asynchronously, publishes completion events |
+| `mc-frontend` | Vite Dev Server | 5173 | React frontend |
 
 ## Event-Driven Flow
 
@@ -91,16 +91,16 @@ Each service can be run individually from its directory:
 
 ```bash
 # Example: run the API Gateway
-cd apps/api-gtw && make run
+cd apps/mc-api-gateway && make run
 
 # Example: run the Order Service
-cd apps/svc-order && make run
+cd apps/mc-order-service && make run
 ```
 
 ### Run Frontend
 
 ```bash
-cd apps/web
+cd apps/mc-frontend
 npm install
 npm run dev
 ```
@@ -139,16 +139,16 @@ npm run dev
 
 ```
 ├── apps/
-│   ├── api-gtw/          # REST API Gateway (Echo)
-│   ├── svc-customer/     # Customer Service (gRPC)
-│   ├── svc-order/        # Order Service (gRPC + Queue Consumer)
-│   ├── svc-payment/      # Payment Service (Queue Consumer)
-│   ├── svc-product/      # Product Service (gRPC)
-│   └── web/              # React Frontend (Vite)
+│   ├── mc-api-gateway/       # REST API Gateway (Echo)
+│   ├── mc-customer-service/  # Customer Service (gRPC)
+│   ├── mc-order-service/     # Order Service (gRPC + Queue Consumer)
+│   ├── mc-payment-service/   # Payment Service (Queue Consumer)
+│   ├── mc-product-service/   # Product Service (gRPC)
+│   └── mc-frontend/          # React Frontend (Vite)
 ├── packages/
-│   ├── grpc/             # Shared protobuf definitions
-│   └── tracing/          # OpenTelemetry tracing utilities
-├── configs/              # Configuration files
-├── scripts/              # Deployment and setup scripts
-└── docs/                 # Architecture diagrams and screenshots
+│   ├── grpc/                 # Shared protobuf definitions
+│   └── tracing/              # OpenTelemetry tracing utilities
+├── configs/                  # Configuration files
+├── scripts/                  # Deployment and setup scripts
+└── docs/                     # Architecture diagrams and screenshots
 ```
