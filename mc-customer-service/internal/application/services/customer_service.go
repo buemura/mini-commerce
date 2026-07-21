@@ -1,4 +1,4 @@
-package usecases
+package services
 
 import (
 	"context"
@@ -7,25 +7,41 @@ import (
 	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/domain/customer"
 )
 
-type CustomerSigninService struct {
+type CustomerService struct {
 	repo           customer.CustomerRepository
 	passwordHasher contracts.PasswordHasher
 	tokenGenerator contracts.TokenGenerator
 }
 
-func NewCustomerSigninService(
+func NewCustomerService(
 	repo customer.CustomerRepository,
 	passwordHasher contracts.PasswordHasher,
 	tokenGenerator contracts.TokenGenerator,
-) *CustomerSigninService {
-	return &CustomerSigninService{
+) *CustomerService {
+	return &CustomerService{
 		repo:           repo,
 		passwordHasher: passwordHasher,
 		tokenGenerator: tokenGenerator,
 	}
 }
 
-func (s *CustomerSigninService) Execute(ctx context.Context, in *customer.SigninCustomerIn) (*customer.SigninCustomerOut, error) {
+func (s *CustomerService) Get(ctx context.Context, customerID string) (*customer.CustomerOut, error) {
+	cust, err := s.repo.FindById(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+	if cust == nil {
+		return nil, customer.ErrCustomerNotFound
+	}
+
+	return &customer.CustomerOut{
+		ID:    cust.ID,
+		Name:  cust.Name,
+		Email: cust.Email,
+	}, nil
+}
+
+func (s *CustomerService) Signin(ctx context.Context, in *customer.SigninCustomerIn) (*customer.SigninCustomerOut, error) {
 	cust, err := s.repo.FindByEmail(ctx, in.Email)
 	if err != nil {
 		return nil, err
@@ -52,4 +68,32 @@ func (s *CustomerSigninService) Execute(ctx context.Context, in *customer.Signin
 			Email: cust.Email,
 		},
 	}, nil
+}
+
+func (s *CustomerService) Signup(ctx context.Context, in *customer.CreateCustomerIn) error {
+	custExists, err := s.repo.FindByEmail(ctx, in.Email)
+	if err != nil {
+		return err
+	}
+	if custExists != nil {
+		return customer.ErrCustomerAlreadyExists
+	}
+
+	hashed, err := s.passwordHasher.Hash(in.Password)
+	if err != nil {
+		return err
+	}
+
+	in.Password = hashed
+
+	cust, err := customer.NewCustomer(in)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.repo.Save(ctx, cust)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/application/usecases"
+	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/application/services"
 	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/domain/customer"
 	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/infra/adapters"
 	"github.com/buemura/event-driven-commerce/mc-customer-service/internal/infra/database"
@@ -18,6 +18,13 @@ type CustomerController struct {
 	pb.UnimplementedCustomerServiceServer
 }
 
+func makeCustomerService() *services.CustomerService {
+	repo := database.NewPgxCustomerRepository(database.Conn)
+	hasher := adapters.NewBcryptPasswordHasher()
+	tkGen := adapters.NewJwtTokenGenerator()
+	return services.NewCustomerService(repo, hasher, tkGen)
+}
+
 func (c CustomerController) SignIn(
 	ctx context.Context,
 	in *pb.SignInRequest,
@@ -28,12 +35,7 @@ func (c CustomerController) SignIn(
 		return nil, status.Error(codes.InvalidArgument, "missing parameters")
 	}
 
-	repo := database.NewPgxCustomerRepository(database.Conn)
-	hasher := adapters.NewBcryptPasswordHasher()
-	tkGen := adapters.NewJwtTokenGenerator()
-	usecase := usecases.NewCustomerSigninService(repo, hasher, tkGen)
-
-	res, err := usecase.Execute(ctx, &customer.SigninCustomerIn{
+	res, err := makeCustomerService().Signin(ctx, &customer.SigninCustomerIn{
 		Email:    in.Email,
 		Password: in.Password,
 	})
@@ -62,11 +64,7 @@ func (c CustomerController) SignUp(
 		return nil, status.Error(codes.InvalidArgument, "missing parameters")
 	}
 
-	repo := database.NewPgxCustomerRepository(database.Conn)
-	hasher := adapters.NewBcryptPasswordHasher()
-	usecase := usecases.NewCustomerSignupService(repo, hasher)
-
-	err := usecase.Execute(ctx, &customer.CreateCustomerIn{
+	err := makeCustomerService().Signup(ctx, &customer.CreateCustomerIn{
 		Name:     in.Name,
 		Email:    in.Email,
 		Password: in.Password,
@@ -88,10 +86,7 @@ func (c CustomerController) GetCustomer(
 		return nil, status.Error(codes.InvalidArgument, "missing parameters")
 	}
 
-	repo := database.NewPgxCustomerRepository(database.Conn)
-	usecase := usecases.NewCustomerGetService(repo)
-
-	res, err := usecase.Execute(ctx, in.Id)
+	res, err := makeCustomerService().Get(ctx, in.Id)
 	if err != nil {
 		log.Println("[GrpcServer][GetCustomer] - Error:", err.Error())
 		return nil, helper.HandleGrpcError(err)
